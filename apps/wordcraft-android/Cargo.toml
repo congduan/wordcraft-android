@@ -1,0 +1,40 @@
+[package]
+name = "wordcraft-android"
+description = "WordCraft Android NativeActivity shell"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unimplemented = "deny"
+todo = "deny"
+unreachable = "deny"
+
+[lints.rust]
+# `android-activity` requires a fixed, externally visible `android_main` symbol.
+# Rust 2024 classifies the symbol-export attribute as unsafe even though this
+# crate contains no unsafe operation; NativeActivity's single entry-point ABI
+# makes the symbol name part of the Android platform contract.
+unsafe_code = "allow"
+
+[lib]
+name = "wordcraft_android"
+crate-type = ["cdylib"]
+
+[[bin]]
+name = "wordcraft-android"
+path = "src/main.rs"
+
+[dependencies]
+log = { workspace = true }
+
+[target.'cfg(target_os = "android")'.dependencies]
+eframe = { workspace = true, features = ["default_fonts", "wgpu", "android-native-activity"] }
+egui = { workspace = true }
+winit = { version = "0.30", default-features = false, features = ["android-native-activity"] }
+wordcraft-engine = { workspace = true }
+wordcraft-ui-egui = { workspace = true }

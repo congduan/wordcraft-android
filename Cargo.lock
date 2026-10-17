@@ -5162,6 +5162,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "wordcraft-android"
+version = "0.7.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "log",
+ "winit",
+ "wordcraft-engine",
+ "wordcraft-ui-egui",
+]
+
+[[package]]
 name = "wordcraft-cli"
 version = "0.7.0"
 dependencies = [
