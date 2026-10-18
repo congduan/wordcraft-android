@@ -151,6 +151,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Још нема речи. Додај у речник на погрешно написаној речи ставља је овде.
 	Mirror indents	Пресликај увлачења
 	Nothing	Ништа
+	Nothing to redo	Нема ништа за понављање
+	Nothing to undo	Нема ништа за опозивање
 	Number alignment:	Поравнање броја:
 	Number format	Формат броја
 	Number style for this level:	Стил броја за овај ниво:
@@ -512,6 +514,7 @@
 	Horizontal Line	Хоризонтална линија
 	Hyphenation	Дељење речи
 	Icons	Иконице
+	Pages & tables	Странице и таблице
 	Ignore All	Занемари све
 	Illustrations	Илустрације
 	Immersive	Имерзивно
@@ -1648,6 +1651,7 @@
 	Display text	Приказани текст
 	Value	Вредност
 	Today	Данас
+	Yesterday	Јуче
 	Put the caret in a content control first.	Прво поставите курсор у контролу садржаја.
 	Right-to-Left Table	Табела са десна на лево
 	Right-to-Left Section	Одељак са десна на лево

@@ -147,6 +147,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Još nema reči. Dodaj u rečnik na pogrešno napisanoj reči stavlja je ovde.
 	Mirror indents	Preslikaj uvlačenja
 	Nothing	Ništa
+	Nothing to redo	Nema ništa za ponavljanje
+	Nothing to undo	Nema ništa za opozivanje
 	Number alignment:	Poravnanje broja:
 	Number format	Format broja
 	Number style for this level:	Stil broja za ovaj nivo:
@@ -508,6 +510,7 @@
 	Horizontal Line	Horizontalna linija
 	Hyphenation	Deljenje reči
 	Icons	Ikonice
+	Pages & tables	Stranice i tabele
 	Ignore All	Zanemari sve
 	Illustrations	Ilustracije
 	Immersive	Imerzivno
@@ -1644,6 +1647,7 @@
 	Display text	Prikazani tekst
 	Value	Vrednost
 	Today	Danas
+	Yesterday	Juče
 	Put the caret in a content control first.	Prvo postavite kursor u kontrolu sadržaja.
 	Right-to-Left Table	Tabela sa desna na levo
 	Right-to-Left Section	Odeljak sa desna na levo

@@ -534,6 +534,7 @@
 	HTML Format	Formát HTML
 	Hyphenation	Dělení slov
 	Icons	Ikony
+	Pages & tables	Stránky a tabulky
 	If…Then…Else	Pokud…Pak…Jinak
 	If…Then…Else…	Pokud…Pak…Jinak…
 	Ignore All	Ignorovat vše
@@ -769,6 +770,8 @@
 	Not saved yet	Dosud neuloženo
 	Not {name}	Bez: {name}
 	Nothing	Nic
+	Nothing to redo	Není co znovu provést
+	Nothing to undo	Není co vrátit zpět
 	Nothing collected yet. Items you copy or cut appear here.	Zatím zde nic není. Položky, které zkopírujete nebo vyjmete, se zobrazí zde.
 	Nudge	Posunout o krok
 	Number	Číslo
@@ -2163,6 +2166,7 @@ preview	Title	Ukázka
 	Display text	Zobrazený text
 	Value	Hodnota
 	Today	Dnes
+	Yesterday	Včera
 	Put the caret in a content control first.	Nejprve umístěte kurzor do ovládacího prvku obsahu.
 
 # WordArt and connectors (#416)

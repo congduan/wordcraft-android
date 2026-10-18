@@ -320,6 +320,7 @@
 	Horizontal Line	Linia pozioma
 	Hyphenation	Dzielenie wyrazów
 	Icons	Ikony
+	Pages & tables	Strony i tabele
 	Ignore All	Ignoruj wszystkie
 	Illustrations	Ilustracje
 	Immersive	Czytanie immersyjne
@@ -1272,6 +1273,8 @@
 	No-Width Optional Break	Opcjonalny podział zerowej szerokości
 	North	Północ
 	Nothing	Nic
+	Nothing to redo	Nie ma nic do ponowienia
+	Nothing to undo	Nie ma nic do cofnięcia
 	Number alignment:	Wyrównanie numeru:
 	Number format	Format numeru
 	Number of the page the field sits on	Numer strony, na której jest pole
@@ -2048,6 +2051,7 @@
 	This folder can't be read: {error}	Nie można odczytać tego folderu: {error}
 	This password type isn't supported.	Ten typ hasła nie jest obsługiwany.
 	Today	Dzisiaj
+	Yesterday	Wczoraj
 	Toggle Check Box	Przełącz pole wyboru
 	Tracked changes	Śledzone zmiany
 	Transform	Przekształć

@@ -492,13 +492,10 @@ fn korean_interface_fonts_load_and_cover_hangul() {
 
 #[test]
 fn cjk_catalogs_are_covered_by_the_embedded_interface_faces() {
-    // #486: every CJK character of the Chinese, Japanese and Korean catalogs and language names
-    // has a glyph in the interface font chain built from the embedded faces alone, in every
-    // interface weight; `?` and boxes showed where the Japanese face was the only CJK one. Needs
-    // a craft-fonts build (CRAFT_FONTS_DIR); without one there is nothing embedded to check, and
-    // the interface reads an installed CJK font instead.
-    if wordcraft_fonts::ui_cjk_fonts(false).is_empty() {
-        eprintln!("skipped: built without craft-fonts (CRAFT_FONTS_DIR)");
+    // Keep the release-font regression guard for complete craft-fonts inputs. A bounded Android
+    // Hans package is checked separately below and intentionally does not ship Japanese/Korean.
+    if wordcraft_fonts::japanese_fonts().next().is_none() || wordcraft_fonts::korean_fonts().next().is_none() {
+        eprintln!("skipped: build lacks the complete CJK craft-fonts set");
         return;
     }
     let names: String = Lang::all().map(Lang::name).collect();
@@ -516,12 +513,36 @@ fn cjk_catalogs_are_covered_by_the_embedded_interface_faces() {
             let missing: String = ctx.fonts_mut(|f| chars.iter().filter(|c| !f.has_glyph(&font, **c)).collect());
             assert!(missing.is_empty(), "{code}: no glyph in {font:?} for {missing}");
         }
-        // So the interface reads no installed CJK font for these languages.
         assert_eq!(
             wordcraft_fonts::ui_uncovered_cjk(&[l.0.source, &names], &wordcraft_fonts::ui_cjk_fonts_for(l.prefers_hans(), l.prefers_korean())),
             Vec::<char>::new()
         );
     }
+}
+
+#[test]
+fn embedded_hans_interface_font_covers_zh_hans_catalog() {
+    // Android carries a bounded Hans UI face. Exercise the final egui fallback chain rather than
+    // relying on a desktop system font: every CJK code point in zh-hans.tsv must have a glyph at
+    // every interface weight. A build without the optional craft-fonts input has no face to test.
+    if wordcraft_fonts::chinese_fonts().next().is_none() {
+        eprintln!("skipped: built without craft-fonts (CRAFT_FONTS_DIR)");
+        return;
+    }
+    let l = lang("zh-hans");
+    let ctx = egui::Context::default();
+    ctx.set_fonts(crate::theme::font_definitions_language(true, false, false));
+    ctx.run_ui(Default::default(), |_| {}).textures_delta.clear();
+    let (entries, errors) = parse_entries(l.0.source);
+    assert!(errors.is_empty(), "zh-hans: {errors:?}");
+    let chars: std::collections::BTreeSet<char> =
+        entries.iter().flat_map(|e| e.translation.chars()).filter(|c| wordcraft_fonts::is_cjk(*c)).collect();
+    assert!(chars.len() > 300, "zh-hans: {} CJK characters", chars.len());
+    for font in [crate::theme::regular(14.0), crate::theme::medium(14.0), crate::theme::semibold(14.0)] {
+        let missing: String = ctx.fonts_mut(|f| chars.iter().filter(|c| !f.has_glyph(&font, **c)).collect());
+        assert!(missing.is_empty(), "zh-hans: no glyph in {font:?} for {missing}");
+    }
+    assert_eq!(wordcraft_fonts::ui_uncovered_cjk(&[l.0.source], &wordcraft_fonts::ui_cjk_fonts_for(true, false)), Vec::<char>::new());
 }
 
 #[test]

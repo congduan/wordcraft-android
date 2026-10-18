@@ -328,6 +328,7 @@
 	Hyperlink	Гиперссылка
 	Hyphenation	Расстановка переносов
 	Icons	Значки
+	Pages & tables	Страницы и таблицы
 	Ignore All	Пропустить все
 	Illustrations	Иллюстрации
 	Immersive	Иммерсивный режим
@@ -1584,6 +1585,8 @@ preview	Title	Пример
 	Link level to style:	Связать уровень со стилем:
 	List Definition	Определение списка
 	Nothing	Ничего
+	Nothing to redo	Нечего повторить
+	Nothing to undo	Нечего отменить
 	Number alignment:	Выравнивание номера:
 	Number format	Формат номера
 	Number style for this level:	Вид нумерации для этого уровня:
@@ -1883,6 +1886,7 @@ preview	Title	Пример
 	Display text	Отображаемый текст
 	Value	Значение
 	Today	Сегодня
+	Yesterday	Вчера
 	Put the caret in a content control first.	Сначала поместите курсор в элемент управления содержимым.
 	Right-to-Left Table	Таблица справа налево
 	Right-to-Left Section	Раздел справа налево

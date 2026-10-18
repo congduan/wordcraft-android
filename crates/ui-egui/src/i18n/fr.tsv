@@ -99,6 +99,8 @@
 	Mirror indents	Retraits en miroir
 	No document is open. Create a document or open one first.	Aucun document n’est ouvert. Créez ou ouvrez d’abord un document.
 	Nothing	Rien
+	Nothing to redo	Rien à rétablir
+	Nothing to undo	Rien à annuler
 	Number alignment:	Alignement des numéros :
 	Number format	Format des numéros
 	Number style for this level:	Style de numéros pour ce niveau :
@@ -416,6 +418,7 @@
 	HTML Format	Format HTML
 	Hyphenation	Césure
 	Icons	Icônes
+	Pages & tables	Pages et tableaux
 	Ignore All	Ignorer tout
 	Illustrations	Illustrations
 	Immersive	Immersif
@@ -1538,6 +1541,7 @@
 	Display text	Texte affiché
 	Value	Valeur
 	Today	Aujourd’hui
+	Yesterday	Hier
 	Put the caret in a content control first.	Placez d’abord le curseur dans un contrôle de contenu.
 	Right-to-Left Table	Tableau de droite à gauche
 	Right-to-Left Section	Section de droite à gauche

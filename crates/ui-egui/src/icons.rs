@@ -69,6 +69,16 @@ impl Pen<'_> {
     fn arrow_down(&self, x: f32, y: f32, c: Color32) {
         self.fill(&[(x - 2.5, y - 1.2), (x + 2.5, y - 1.2), (x, y + 1.5)], c);
     }
+    /// A shallow open curve from `(x0, y0)` to `(x1, y1)` bowing through the control point.
+    fn arc(&self, x0: f32, y0: f32, cx: f32, cy: f32, x1: f32, y1: f32, c: Color32) {
+        let curve = egui::epaint::QuadraticBezierShape::from_points_stroke(
+            [self.pt(x0, y0), self.pt(cx, cy), self.pt(x1, y1)],
+            false,
+            Color32::TRANSPARENT,
+            self.stroke(c),
+        );
+        self.p.add(Shape::QuadraticBezier(curve));
+    }
 }
 
 /// Paint icon `name` into `r`. `c` is the line colour; the accent comes from the theme.
@@ -80,6 +90,58 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
     let green = Color32::from_rgb(0x2E, 0x8B, 0x57);
     let orange = Color32::from_rgb(0xE0, 0x7B, 0x1F);
     match name {
+        // Android start screen: original 20dp outlines for documents and navigation.
+        "plusFile" => {
+            pen.page(3.0, 2.0, 13.5, 17.5);
+            pen.line_c(&[(15.5, 12.5), (19.0, 12.5)], a);
+            pen.line_c(&[(17.25, 10.75), (17.25, 14.25)], a);
+        }
+        "folderOutline" => pen.closed(&[(2.0, 5.5), (7.0, 5.5), (8.5, 7.5), (18.0, 7.5), (18.0, 16.5), (2.0, 16.5)], c),
+        "docOutline" => {
+            pen.page(4.0, 2.0, 16.0, 18.0);
+            pen.lines(7.0, 13.0, &[9.0, 12.0, 15.0]);
+        }
+        // Mobile navigation: an original single-stroke back arrow.
+        "arrowLeft" => {
+            pen.line(&[(16.5, 10.0), (4.0, 10.0)]);
+            pen.line(&[(9.5, 4.5), (4.0, 10.0), (9.5, 15.5)]);
+        }
+        // Mobile navigation-bar section glyph, deliberately neutral so the label
+        // remains the primary affordance for all five command sheets.
+        "tab" => {
+            pen.rect(4.0, 4.0, 16.0, 16.0, c);
+            pen.line_c(&[(7.0, 8.0), (13.0, 8.0), (7.0, 12.0), (13.0, 12.0)], a);
+        }
+        // Navigation tab glyphs (Android): one distinct original 24dp outline per tab.
+        "tabHome" => {
+            // Document with text lines: the editing home.
+            pen.rect(5.0, 3.5, 14.0, 17.0, c);
+            pen.line(&[(8.0, 8.0), (16.0, 8.0)]);
+            pen.line(&[(8.0, 11.5), (16.0, 11.5)]);
+            pen.line(&[(8.0, 15.0), (13.0, 15.0)]);
+        }
+        "tabInsert" => {
+            // Plus inside a frame: inserting content.
+            pen.rect(4.0, 4.0, 16.0, 16.0, c);
+            pen.line(&[(12.0, 8.0), (12.0, 16.0)]);
+            pen.line(&[(8.0, 12.0), (16.0, 12.0)]);
+        }
+        "tabLayout" => {
+            // Page with margin column: layout and page setup.
+            pen.rect(4.5, 3.5, 15.0, 17.0, c);
+            pen.line(&[(9.0, 3.5), (9.0, 20.5)]);
+            pen.line(&[(9.0, 8.0), (19.5, 8.0)]);
+        }
+        "tabReview" => {
+            // Check inside a speech bubble: comments and tracking.
+            pen.line_c(&[(5.0, 5.0), (19.0, 5.0), (19.0, 15.0), (10.0, 15.0), (7.0, 18.0), (7.0, 15.0), (5.0, 15.0), (5.0, 5.0)], c);
+            pen.line_c(&[(9.0, 10.0), (11.0, 12.0), (15.5, 8.0)], a);
+        }
+        "tabView" => {
+            // Eye: view modes and zoom.
+            pen.line_c(&[(4.0, 12.0), (8.0, 8.5), (12.0, 7.5), (16.0, 8.5), (20.0, 12.0), (16.0, 15.5), (12.0, 16.5), (8.0, 15.5), (4.0, 12.0)], c);
+            pen.circle(12.0, 12.0, 2.5, a);
+        }
         // Clipboard
         "paste" => {
             pen.rect(4.0, 3.5, 14.0, 17.0, c);
@@ -164,6 +226,29 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.text(10.5, 10.5, 15.0, "A", Color32::from_rgba_unmultiplied(0, 0, 0, 40), true);
         }
         "fontdialog" => pen.line(&[(13.0, 13.0), (17.0, 17.0), (17.0, 13.0)]),
+        // Font, geometric: the same marks the desktop keeps as lettered tiles, redrawn as strokes
+        // so they hold up at a touch target's size. New names — the desktop keeps its letters.
+        "boldGeo" => {
+            // Weight as stroke weight: one bar three times, thin to heavy.
+            pen.frect(4.0, 5.0, 6.0, 15.0, c);
+            pen.frect(8.0, 5.0, 10.75, 15.0, c);
+            pen.frect(12.75, 5.0, 16.5, 15.0, c);
+        }
+        "italicGeo" => {
+            // The lean: a slanted stem, no letter borrowed.
+            pen.fill(&[(10.0, 4.0), (13.0, 4.0), (10.0, 16.0), (7.0, 16.0)], c);
+        }
+        "underlineGeo" => {
+            // A line of text over its underline swash.
+            pen.line(&[(4.0, 6.5), (16.0, 6.5)]);
+            pen.arc(4.0, 12.0, 10.0, 16.0, 16.0, 12.0, c);
+        }
+        "fontcolorDrop" => {
+            // Half a drop of ink, filled to the level line in the colour itself.
+            pen.closed(&[(10.0, 2.5), (13.7, 8.2), (14.4, 10.8), (12.6, 13.7), (7.4, 13.7), (5.6, 10.8), (6.3, 8.2)], c);
+            pen.fill(&[(5.6, 10.8), (14.4, 10.8), (12.6, 13.7), (7.4, 13.7)], red);
+            pen.line(&[(5.6, 10.8), (14.4, 10.8)]);
+        }
         // Paragraph
         "bullets" => {
             for (i, y) in [5.0, 10.0, 15.0].iter().enumerate() {
@@ -316,6 +401,16 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.line(&[(8.0, 3.0), (8.0, 17.0)]);
             pen.line(&[(12.5, 3.0), (12.5, 17.0)]);
         }
+        // Convert Text to Table: the text lines, an accent arrow across, the table they become.
+        "fromText" => {
+            pen.lines(2.0, 6.5, &[5.0, 8.0, 11.0]);
+            pen.line_c(&[(7.5, 8.0), (9.3, 8.0)], a);
+            pen.fill(&[(9.3, 6.6), (9.3, 9.4), (11.3, 8.0)], a);
+            pen.rect(12.0, 3.5, 18.0, 12.5, c);
+            pen.line(&[(12.0, 6.5), (18.0, 6.5)]);
+            pen.line(&[(12.0, 9.5), (18.0, 9.5)]);
+            pen.line(&[(15.0, 3.5), (15.0, 12.5)]);
+        }
         "picture" => {
             pen.rect(2.5, 4.0, 17.5, 16.0, c);
             pen.fill(&[(4.0, 14.5), (8.5, 8.0), (12.0, 14.5)], a);
@@ -343,6 +438,16 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.fcircle(7.5, 8.0, 1.0, c);
             pen.fcircle(12.5, 8.0, 1.0, c);
             pen.line_c(&[(6.5, 12.0), (10.0, 14.5), (13.5, 12.0)], a);
+        }
+        // A single shape: the square and the circle sharing space, both in outline.
+        "shape" => {
+            pen.rect(3.0, 3.0, 12.0, 12.0, c);
+            pen.circle(12.5, 12.5, 4.5, a);
+        }
+        // A single icon glyph: the four-point sparkle and its small companion star.
+        "iconGlyph" => {
+            pen.closed(&[(10.0, 2.5), (11.9, 8.1), (17.5, 10.0), (11.9, 11.9), (10.0, 17.5), (8.1, 11.9), (2.5, 10.0), (8.1, 8.1)], c);
+            pen.fcircle(15.5, 15.5, 1.6, a);
         }
         "models3d" => {
             pen.closed(&[(10.0, 2.5), (17.0, 6.0), (17.0, 14.0), (10.0, 17.5), (3.0, 14.0), (3.0, 6.0)], c);

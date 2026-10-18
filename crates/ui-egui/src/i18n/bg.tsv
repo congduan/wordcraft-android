@@ -98,6 +98,8 @@
 	List Definition	Дефиниция на списък
 	No document is open. Create a document or open one first.	Няма отворен документ. Първо създайте или отворете документ.
 	Nothing	Нищо
+	Nothing to redo	Няма какво да се повтори
+	Nothing to undo	Няма какво да се отмени
 	Number alignment:	Подравняване на номера:
 	Number format	Формат на номера
 	Number style for this level:	Стил на номериране за това ниво:
@@ -403,6 +405,7 @@
 	Horizontal Line	Хоризонтална линия
 	Hyphenation	Сричкопренасяне
 	Icons	Икони
+	Pages & tables	Страници и таблици
 	Ignore All	Пропускане на всички
 	Illustrations	Илюстрации
 	Immersive	Потапящ
@@ -1471,6 +1474,7 @@
 	Display text	Показван текст
 	Value	Стойност
 	Today	Днес
+	Yesterday	Вчера
 	Put the caret in a content control first.	Първо поставете курсора в контрола за съдържание.
 	Right-to-Left Table	Таблица отдясно наляво
 	Right-to-Left Section	Раздел отдясно наляво

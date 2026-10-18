@@ -121,6 +121,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Aún no hay palabras. Añadir al diccionario sobre una palabra mal escrita la pone aquí.
 	Mirror indents	Sangrías simétricas
 	Nothing	Nada
+	Nothing to redo	Nada que rehacer
+	Nothing to undo	Nada que deshacer
 	Number alignment:	Alineación del número:
 	Number format	Formato de número
 	Number style for this level:	Estilo de número para este nivel:
@@ -464,6 +466,7 @@
 	Hyperlink	Hipervínculo
 	Hyphenation	Separación de palabras
 	Icons	Iconos
+	Pages & tables	Páginas y tablas
 	Ignore All	Omitir todo
 	Illustrations	Ilustraciones
 	Immersive	Inmersivo
@@ -1674,6 +1677,7 @@
 	Display text	Texto mostrado
 	Value	Valor
 	Today	Hoy
+	Yesterday	Ayer
 	Put the caret in a content control first.	Coloque primero el cursor en un control de contenido.
 	Right-to-Left Table	Tabla de derecha a izquierda
 	Right-to-Left Section	Sección de derecha a izquierda

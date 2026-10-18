@@ -126,6 +126,8 @@
 	No templates match your search.	沒有符合搜尋的範本。
 	No words yet. Add to Dictionary on a misspelled word puts it here.	還沒有單字。對拼字錯誤的單字選擇「新增至字典」會將它放在這裡。
 	Nothing	無
+	Nothing to redo	沒有可重做的內容
+	Nothing to undo	沒有可復原的內容
 	Number alignment:	編號對齊方式：
 	Number format	編號格式
 	Number style for this level:	此層級的編號樣式：
@@ -461,6 +463,7 @@
 	Horizontal Line	水平線
 	Hyphenation	斷字
 	Icons	圖示
+	Pages & tables	頁面與表格
 	Ignore All	全部略過
 	Illustrations	圖例
 	Immersive	沉浸式
@@ -1635,6 +1638,7 @@
 	Display text	顯示文字
 	Value	值
 	Today	今天
+	Yesterday	昨天
 	Put the caret in a content control first.	請先將游標放在內容控制項中。
 	Right-to-Left Table	從右至左表格
 	Right-to-Left Section	從右至左節

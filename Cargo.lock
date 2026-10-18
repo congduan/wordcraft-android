@@ -5167,6 +5167,7 @@ version = "0.7.0"
 dependencies = [
  "eframe",
  "egui",
+ "jni",
  "log",
  "winit",
  "wordcraft-engine",

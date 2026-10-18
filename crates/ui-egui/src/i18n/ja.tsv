@@ -125,6 +125,8 @@
 	No templates match your search.	検索に一致するテンプレートはありません。
 	No words yet. Add to Dictionary on a misspelled word puts it here.	まだ単語はありません。スペルミスの単語で [辞書に追加] を選ぶと、ここに追加されます。
 	Nothing	なし
+	Nothing to redo	やり直す操作はありません
+	Nothing to undo	元に戻す操作はありません
 	Number alignment:	番号の配置:
 	Number format	番号書式
 	Number style for this level:	このレベルの番号の種類:
@@ -460,6 +462,7 @@
 	Horizontal Line	横線
 	Hyphenation	ハイフネーション
 	Icons	アイコン
+	Pages & tables	ページと表
 	Ignore All	すべて無視
 	Illustrations	図
 	Immersive	イマーシブ
@@ -1634,6 +1637,7 @@
 	Display text	表示テキスト
 	Value	値
 	Today	今日
+	Yesterday	昨日
 	Put the caret in a content control first.	先にカーソルをコンテンツ コントロールに置いてください。
 	Right-to-Left Table	右から左の表
 	Right-to-Left Section	右から左のセクション

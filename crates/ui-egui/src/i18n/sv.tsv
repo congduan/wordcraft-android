@@ -120,6 +120,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Inga ord än. Välj Lägg till i ordlistan på ett felstavat ord, så hamnar det här.
 	Mirror indents	Spegelvända indrag
 	Nothing	Ingenting
+	Nothing to redo	Inget att göra om
+	Nothing to undo	Inget att ångra
 	Number alignment:	Justering av nummer:
 	Number format	Nummerformat
 	Number style for this level:	Numreringsstil för den här nivån:
@@ -457,6 +459,7 @@
 	Hyperlink	Hyperlänk
 	Hyphenation	Avstavning
 	Icons	Ikoner
+	Pages & tables	Sidor och tabeller
 	Ignore All	Ignorera alla
 	Illustrations	Illustrationer
 	Immersive	Fördjupning
@@ -1656,6 +1659,7 @@
 	Display text	Visningstext
 	Value	Värde
 	Today	I dag
+	Yesterday	I går
 	Put the caret in a content control first.	Placera först markören i en innehållskontroll.
 	Right-to-Left Table	Tabell från höger till vänster
 	Right-to-Left Section	Avsnitt från höger till vänster

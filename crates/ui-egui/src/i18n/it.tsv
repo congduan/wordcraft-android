@@ -96,6 +96,8 @@
 	List Definition	Definizione elenco
 	No document is open. Create a document or open one first.	Nessun documento aperto. Crea o apri prima un documento.
 	Nothing	Niente
+	Nothing to redo	Niente da ripetere
+	Nothing to undo	Niente da annullare
 	Number alignment:	Allineamento numero:
 	Number format	Formato numero
 	Number style for this level:	Stile numero per questo livello:
@@ -398,6 +400,7 @@
 	Horizontal Line	Linea orizzontale
 	Hyphenation	Sillabazione
 	Icons	Icone
+	Pages & tables	Pagine e tabelle
 	Ignore All	Ignora tutto
 	Illustrations	Illustrazioni
 	Immersive	Immersiva
@@ -1697,6 +1700,7 @@
 	Display text	Testo visualizzato
 	Value	Valore
 	Today	Oggi
+	Yesterday	Ieri
 	Put the caret in a content control first.	Posiziona prima il cursore in un controllo contenuto.
 	Right-to-Left Table	Tabella da destra a sinistra
 	Right-to-Left Section	Sezione da destra a sinistra

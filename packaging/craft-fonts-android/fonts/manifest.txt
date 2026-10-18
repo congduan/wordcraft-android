@@ -1,0 +1,2 @@
+# Android UI-only craft-fonts input. Generated from the pinned craft-fonts Noto source.
+Noto Sans CJK SC | Regular | fonts/noto-sans-cjk-sc/NotoSansCJKsc-UI-Subset.otf | Hans,Latn | OFL-1.1 | fonts/noto-sans-cjk-sc/OFL.txt | 754fd960c1b35cec8527b1218ac792e1b4908411a95e17177448c15d5d8e9cfc | https://github.com/notofonts/noto-cjk/tree/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/SimplifiedChinese

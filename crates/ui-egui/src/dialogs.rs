@@ -16,6 +16,8 @@ use wordcraft_engine::Password;
 use wordcraft_engine::cmd::mailings::{FilterOp, FilterRule, SortKey};
 
 use crate::WordApp;
+#[cfg(any(target_os = "android", feature = "mobile"))]
+use crate::mobile::NAV_INSET;
 use crate::options::MeasureExt;
 use crate::theme::{Tokens, semibold};
 
@@ -1213,10 +1215,45 @@ const DIALOG_CENTRED_FRAMES: u8 = 2;
 /// that, so dragging the title bar moves it (#732). egui keeps it on screen if it grows past the
 /// bottom.
 fn place_dialog<'a>(ctx: &egui::Context, id: egui::Id, w: egui::Window<'a>) -> egui::Window<'a> {
-    let w = w.pivot(egui::Align2::CENTER_TOP);
-    match ctx.data(|d| d.get_temp::<(egui::Id, u8)>(dialog_top_key())) {
-        Some((open, frames)) if open == id && frames >= DIALOG_CENTRED_FRAMES => w,
-        _ => w.anchor(egui::Align2::CENTER_CENTER, vec2(0.0, -40.0)),
+    #[cfg(any(target_os = "android", feature = "mobile"))]
+    {
+        let _ = id;
+        // Keep this Android-only: callers and the desktop Window construction stay
+        // identical. `Window` is retained because every dialog body supplies a
+        // Window builder; anchoring makes it a non-draggable bottom-sheet surface.
+        // The offset clears the 80dp tab bar plus the 16dp gesture strip (NAV_INSET),
+        // so dialog buttons never sit under the navigation bar. The sheet takes 92% of
+        // the screen and insets its content by 16dp, so a dialog never touches the
+        // screen edges the way a desktop window's tight fit does on a narrow display.
+        let viewport = ctx.content_rect();
+        let width = (viewport.width() * 0.92).clamp(280.0, 560.0);
+        let height = (viewport.height() * 0.70).clamp(240.0, viewport.height() * 0.90);
+        // The phone draws its own title row (`mobile::sheet_title`): egui's window title bar
+        // paints the window frame's stroke around the title strip, which put a line straight
+        // through the sheet's title text, and centred the title the way a desktop window does.
+        let w = w.title_bar(false);
+        w.pivot(egui::Align2::CENTER_BOTTOM)
+            .anchor(egui::Align2::CENTER_BOTTOM, vec2(0.0, -(96.0 + NAV_INSET)))
+            .min_width(width)
+            .max_width(width)
+            .default_height(height)
+            .max_height(viewport.height() - (96.0 + NAV_INSET) - 8.0)
+            .frame(
+                // egui 0.36 has no `Window::inner_margin`; the frame carries the 16dp inset.
+                egui::Frame::NONE
+                    .fill(Tokens::get(ctx).ribbon)
+                    .stroke(egui::Stroke::new(1.0, Tokens::get(ctx).border))
+                    .corner_radius(egui::CornerRadius::same(28))
+                    .inner_margin(egui::Margin::same(16)),
+            )
+    }
+    #[cfg(not(any(target_os = "android", feature = "mobile")))]
+    {
+        let w = w.pivot(egui::Align2::CENTER_TOP);
+        match ctx.data(|d| d.get_temp::<(egui::Id, u8)>(dialog_top_key())) {
+            Some((open, frames)) if open == id && frames >= DIALOG_CENTRED_FRAMES => w,
+            _ => w.anchor(egui::Align2::CENTER_CENTER, vec2(0.0, -40.0)),
+        }
     }
 }
 
@@ -1294,7 +1331,13 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
     let id = egui::Id::new(("dialog", title));
     let shown = place_dialog(ctx, id, egui::Window::new(tl!(title)).id(id).collapsible(false).resizable(false)).open(&mut open).show(ctx, |ui| {
         ui.set_min_width(340.0);
-        close = body(app, ui, &mut d);
+        // The phone's sheet title: left-aligned at the sheet's own 16dp inset with a 48dp close,
+        // in place of the desktop title bar disabled above.
+        #[cfg(any(target_os = "android", feature = "mobile"))]
+        if crate::mobile::sheet_title(ui, tl!(title), &crate::theme::Tokens::get(ui.ctx())) {
+            close = true;
+        }
+        close = body(app, ui, &mut d) || close;
     });
     if shown.is_some() {
         count_dialog_frame(ctx, id);
@@ -1424,6 +1467,23 @@ fn page_paper_group(ui: &mut Ui, paper: &mut (f32, f32), landscape: &mut bool, c
         }
         ui.end_row();
     });
+}
+
+/// A dialog's content row. The phone's sheet is 280–380dp wide, where rows laid out for the
+/// desktop's 620dp dialogs overflow and clip at the screen edge, so there the row wraps to the
+/// next line instead, on the 8dp grid. The desktop keeps its exact layout.
+#[cfg(any(target_os = "android", feature = "mobile"))]
+pub(crate) fn dialog_row(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
+    ui.horizontal_wrapped(|ui| {
+        ui.spacing_mut().item_spacing = egui::vec2(8.0, 8.0);
+        add(ui);
+    });
+}
+
+/// A dialog's content row; the desktop's dialogs are wide enough not to wrap.
+#[cfg(not(any(target_os = "android", feature = "mobile")))]
+pub(crate) fn dialog_row(ui: &mut Ui, add: impl FnOnce(&mut Ui)) {
+    ui.horizontal(add);
 }
 
 pub(crate) fn buttons(ui: &mut Ui, ok: &str) -> (bool, bool) {
@@ -1756,6 +1816,26 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         Dialog::Tabs { form } => crate::dialogs_para::tabs(app, ui, form),
         Dialog::Borders { form } => crate::dialogs_para::borders(app, ui, form),
         Dialog::Find { query, replace, match_case, whole_word, regex, extra, tab, goto_what, goto_target, message, focus } => {
+            #[cfg(any(target_os = "android", feature = "mobile"))]
+            {
+                // The phone's tabs are the shared pill: the one 12%-accent selection treatment
+                // instead of egui's own selection colour (which read as a second accent).
+                const TABS: [&str; 3] = ["Find", "Replace", "Go To"];
+                let current = match tab {
+                    FindTab::Replace => 1,
+                    FindTab::GoTo => 2,
+                    FindTab::Find => 0,
+                };
+                if let Some(picked) = crate::mobile::pills(ui, current, &TABS) {
+                    *tab = match picked {
+                        1 => FindTab::Replace,
+                        2 => FindTab::GoTo,
+                        _ => FindTab::Find,
+                    };
+                    message.clear();
+                }
+            }
+            #[cfg(not(any(target_os = "android", feature = "mobile")))]
             ui.horizontal(|ui| {
                 for (t, label) in [(FindTab::Find, "Find"), (FindTab::Replace, "Replace"), (FindTab::GoTo, "Go To")] {
                     if ui.selectable_label(*tab == t, tl!(label)).clicked() && *tab != t {
@@ -1769,9 +1849,19 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 return goto_body(app, ui, goto_what, goto_target, message);
             }
             let replace_mode = *tab == FindTab::Replace;
+            // The field boxes shrink with the sheet on the phone and take the one control radius;
+            // the desktop keeps its 240/228 and its own visuals.
+            #[cfg(any(target_os = "android", feature = "mobile"))]
+            let field = |max: f32, ui: &mut Ui| {
+                crate::mobile::field_radius(ui);
+                ui.available_width().min(max).max(60.0)
+            };
+            #[cfg(not(any(target_os = "android", feature = "mobile")))]
+            let field = |max: f32, _ui: &mut Ui| max;
             ui.horizontal(|ui| {
                 ui.label(tl!("Find what:"));
-                let r = ui.add(egui::TextEdit::singleline(query).id(egui::Id::new("find_what")).desired_width(240.0));
+                let width = field(240.0, ui);
+                let r = ui.add(egui::TextEdit::singleline(query).id(egui::Id::new("find_what")).desired_width(width));
                 if std::mem::take(focus) {
                     r.request_focus();
                 }
@@ -1782,7 +1872,8 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             if replace_mode {
                 ui.horizontal(|ui| {
                     ui.label(tl!("Replace with:"));
-                    if ui.add(egui::TextEdit::singleline(replace).desired_width(228.0)).gained_focus() {
+                    let width = field(228.0, ui);
+                    if ui.add(egui::TextEdit::singleline(replace).desired_width(width)).gained_focus() {
                         extra.to_replace = true;
                     }
                 });
@@ -1791,25 +1882,29 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             }
             // Word greys out Match case and the word options with wildcards (they always match case).
             let plain = !extra.wildcards;
-            ui.horizontal(|ui| {
+            dialog_row(ui, |ui| {
                 ui.add_enabled(plain, egui::Checkbox::new(match_case, tl!("Match case")));
                 ui.add_enabled(plain, egui::Checkbox::new(whole_word, tl!("Whole words")));
                 ui.checkbox(&mut extra.wildcards, tl!("Use wildcards"));
             });
             let arrow = if extra.more { "▾" } else { "▸" };
-            if ui.selectable_label(extra.more, format!("{arrow} {}", tl!("Search Options"))).clicked() {
+            #[cfg(any(target_os = "android", feature = "mobile"))]
+            let opened = crate::mobile::selection_scope(ui, |ui| ui.selectable_label(extra.more, format!("{arrow} {}", tl!("Search Options")))).clicked();
+            #[cfg(not(any(target_os = "android", feature = "mobile")))]
+            let opened = ui.selectable_label(extra.more, format!("{arrow} {}", tl!("Search Options"))).clicked();
+            if opened {
                 extra.more = !extra.more;
             }
             if extra.more {
-                ui.horizontal(|ui| {
+                dialog_row(ui, |ui| {
                     ui.add_enabled(plain, egui::Checkbox::new(&mut extra.prefix, tl!("Match prefix")));
                     ui.add_enabled(plain, egui::Checkbox::new(&mut extra.suffix, tl!("Match suffix")));
                 });
-                ui.horizontal(|ui| {
+                dialog_row(ui, |ui| {
                     ui.add_enabled(plain, egui::Checkbox::new(&mut extra.ignore_punct, tl!("Ignore punctuation characters")));
                     ui.add_enabled(plain, egui::Checkbox::new(&mut extra.ignore_space, tl!("Ignore white-space characters")));
                 });
-                ui.horizontal(|ui| {
+                dialog_row(ui, |ui| {
                     ui.checkbox(regex, tl!("Regular expressions"));
                     if let Some(code) = special_menu(ui, extra) {
                         if extra.to_replace { replace.push_str(code) } else { query.push_str(code) }
@@ -1828,6 +1923,9 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                 "ignorePunct": extra.ignore_punct,
                 "ignoreSpace": extra.ignore_space,
             });
+            // Reading Highlight stays a desktop affordance: on the phone the row hung there as an
+            // unexplained bare toggle, and a hidden control beats a misleading one.
+            #[cfg(not(any(target_os = "android", feature = "mobile")))]
             if !replace_mode {
                 ui.horizontal(|ui| {
                     let lit = app.session.find.highlight;
@@ -1845,8 +1943,15 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
             if !message.is_empty() {
                 ui.label(egui::RichText::new(message.as_str()).weak());
             }
+            // The phone's action row: one line of equal-width 40dp buttons, Find Next filled as
+            // the main action and Close outlined, instead of four same-weight desktop buttons
+            // that wrapped.
+            #[cfg(any(target_os = "android", feature = "mobile"))]
+            let close = crate::mobile::find_buttons(ui, app, replace_mode, &opts, message);
+            #[cfg(not(any(target_os = "android", feature = "mobile")))]
             let mut close = false;
-            ui.horizontal(|ui| {
+            #[cfg(not(any(target_os = "android", feature = "mobile")))]
+            dialog_row(ui, |ui| {
                 if replace_mode {
                     if ui.button(tl!("Replace All")).clicked() {
                         match app.run("edit.replaceAll", opts.clone()) {

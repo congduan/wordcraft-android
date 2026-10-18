@@ -1015,6 +1015,7 @@
 	ISO 690 (numerical)	ISO 690 (numerički)
 	Icon Color	Boja ikone
 	Icons	Ikone
+	Pages & tables	Stranice i tablice
 	Identity Matrices	Jedinične matrice
 	If…Then…Else	Ako…Onda…Inače
 	If…Then…Else…	Ako…Onda…Inače…
@@ -1457,6 +1458,8 @@ template	Letter	Pismo
 	Not used by any command	Ne koristi se ni u jednoj naredbi
 	Not {name}	Nije {name}
 	Nothing	Ništa
+	Nothing to redo	Nema ničega za ponoviti
+	Nothing to undo	Nema ničega za poništiti
 	Nothing collected yet. Items you copy or cut appear here.	Još ništa nije prikupljeno. Ovdje se prikazuju stavke koje kopirate ili izrežete.
 	Now used by {command}	Sada ga koristi {command}
 	Nudge	Pomakni malo
@@ -2269,6 +2272,7 @@ preview	Title	Naslov
 	Title:	Naslov:
 	To open Word documents with WordCraft by default: select one in Finder, choose File › Get Info, pick WordCraft under Open with, then click Change All.	Da biste Word dokumente prema zadanim postavkama otvarali u programu WordCraft: odaberite jedan u Finderu, odaberite Datoteka › Dohvati informacije, pod Otvori pomoću odaberite WordCraft, pa kliknite Promijeni sve.
 	Today	Danas
+	Yesterday	Juče
 	Toggle Check Box	Prebaci potvrdni okvir
 	Toggle Field Codes	Prebaci kodove polja
 	Toggle Unicode Character	Prebaci Unicode znak

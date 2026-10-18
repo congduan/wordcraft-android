@@ -332,6 +332,7 @@
 	Hyperlink	Hüperlink
 	Hyphenation	Poolitus
 	Icons	Ikoonid
+	Pages & tables	Leheküljed ja tabelid
 	Ignore All	Eira kõiki
 	Ignore web and file addresses	Eira veebi- ja failiaadresse
 	Ignore words in capitals	Eira suurtähtedega sõnu
@@ -1296,6 +1297,8 @@
 	Link level to style:	Seo tase stiiliga:
 	List Definition	Loendi määratlus
 	Nothing	Mitte midagi
+	Nothing to redo	Puudub uuestitehtav
+	Nothing to undo	Puudub tagasivõetav
 	Number alignment:	Numbri joondus:
 	Number format	Numbri vorming
 	Number style for this level:	Selle taseme numbristiil:
@@ -2048,6 +2051,7 @@
 	Display text	Kuvatav tekst
 	Value	Väärtus
 	Today	Täna
+	Yesterday	Eile
 	Put the caret in a content control first.	Pange kursor esmalt sisujuhtelementi.
 	Add line numbering	Lisa reanummerdus
 	Add to Document	Lisa dokumenti

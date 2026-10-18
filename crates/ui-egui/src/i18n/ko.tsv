@@ -111,6 +111,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	아직 단어가 없습니다. 맞춤법이 틀린 단어에서 사전에 추가를 선택하면 여기에 표시됩니다.
 	Mirror indents	좌우 대칭 들여쓰기
 	Nothing	없음
+	Nothing to redo	다시 실행할 작업이 없습니다
+	Nothing to undo	실행 취소할 작업이 없습니다
 	Number alignment:	번호 맞춤:
 	Number format	번호 서식
 	Number style for this level:	이 수준의 번호 스타일:
@@ -454,6 +456,7 @@
 	HTML Format	HTML 형식
 	Hyphenation	하이픈 넣기
 	Icons	아이콘
+	Pages & tables	페이지 및 표
 	Ignore All	모두 무시
 	Illustrations	일러스트레이션
 	Immersive	몰입형
@@ -1612,6 +1615,7 @@
 	Display text	표시 텍스트
 	Value	값
 	Today	오늘
+	Yesterday	어제
 	Put the caret in a content control first.	먼저 콘텐츠 컨트롤 안에 커서를 놓으세요.
 	Right-to-Left Table	오른쪽에서 왼쪽 표
 	Right-to-Left Section	오른쪽에서 왼쪽 구역

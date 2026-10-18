@@ -124,6 +124,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Слів ще немає. «Додати до словника» для слова з помилкою додає його сюди.
 	Mirror indents	Дзеркальні відступи
 	Nothing	Нічого
+	Nothing to redo	Немає чого повторити
+	Nothing to undo	Немає чого скасувати
 	Number alignment:	Вирівнювання номера:
 	Number format	Формат номера
 	Number style for this level:	Стиль номера для цього рівня:
@@ -473,6 +475,7 @@
 	HTML Format	Формат HTML
 	Hyphenation	Перенесення слів
 	Icons	Піктограми
+	Pages & tables	Сторінки та таблиці
 	Ignore All	Ігнорувати всі
 	Illustrations	Ілюстрації
 	Immersive	Зосереджений
@@ -1646,6 +1649,7 @@
 	Display text	Текст для показу
 	Value	Значення
 	Today	Сьогодні
+	Yesterday	Учора
 	Put the caret in a content control first.	Спершу поставте курсор в елемент керування вмістом.
 	Right-to-Left Table	Таблиця справа наліво
 	Right-to-Left Section	Розділ справа наліво

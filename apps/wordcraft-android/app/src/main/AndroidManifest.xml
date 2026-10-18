@@ -5,7 +5,7 @@
         android:label="WordCraft"
         android:theme="@style/AppTheme">
         <activity
-            android:name="android.app.NativeActivity"
+            android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"

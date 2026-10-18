@@ -324,6 +324,7 @@
 	Hyperlink	Köprü
 	Hyphenation	Heceleme
 	Icons	Simgeler
+	Pages & tables	Sayfalar ve tablolar
 	Ignore All	Tümünü Yoksay
 	Illustrations	Çizimler
 	Immersive	Odaklı
@@ -1583,6 +1584,8 @@ preview	Title	Örnek
 	Link level to style:	Düzeyi stile bağla:
 	List Definition	Liste Tanımı
 	Nothing	Hiçbiri
+	Nothing to redo	Yinelenecek bir şey yok
+	Nothing to undo	Geri alınacak bir şey yok
 	Number alignment:	Numara hizalaması:
 	Number format	Numara biçimi
 	Number style for this level:	Bu düzeyin numara stili:
@@ -1885,6 +1888,7 @@ preview	Title	Örnek
 	Display text	Görünen metin
 	Value	Değer
 	Today	Bugün
+	Yesterday	Dün
 	Put the caret in a content control first.	Önce imleci bir içerik denetiminin içine koyun.
 	Right-to-Left Table	Sağdan Sola Tablo
 	Right-to-Left Section	Sağdan Sola Bölüm

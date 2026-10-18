@@ -62,6 +62,8 @@ pub mod ink;
 pub mod keys;
 pub mod keytips;
 pub mod mini_toolbar;
+#[cfg(any(target_os = "android", feature = "mobile"))]
+pub mod mobile;
 pub mod objects;
 pub mod options;
 pub mod panes;
@@ -1991,6 +1993,7 @@ impl WordApp {
             ctx.request_repaint();
             return;
         }
+        #[cfg(not(any(target_os = "android", feature = "mobile")))]
         let t = theme::Tokens::get(&ctx);
         self.escape_free = self.dialog.is_none() && !self.ui.backstage && self.ui.keytips == keytips::Phase::Off && !egui::Popup::is_any_open(&ctx);
         // Keytips are read before layout so the frame paints the new state; badges paint after
@@ -2001,14 +2004,31 @@ impl WordApp {
         if self.session.view.focus_mode && self.dialog.is_none() && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Escape)) {
             let _ = self.run("view.focus", json!({"value": false}));
         }
+        #[cfg(any(target_os = "android", feature = "mobile"))]
+        {
+            // Android has its own surfaces end to end: the mobile home when no document is
+            // open, and the mobile editing chrome otherwise. The desktop Backstage (fixed
+            // 200dp sidebar) and desktop ribbon must not take over the frame on a phone, so
+            // `ui.backstage` is simply ignored here. Exactly one of this block and the desktop
+            // chain below may run per frame: their `cfg`s are each other's complement, so the
+            // `mobile` feature never double-draws the desktop chrome under it.
+            if self.has_document() {
+                mobile::show(self, ui);
+            } else {
+                mobile::show_home(self, ui);
+            }
+        }
+        #[cfg(not(any(target_os = "android", feature = "mobile")))]
         if self.ui.backstage {
             backstage::show(self, ui);
         } else if !self.has_document() {
-            // No document open (#1129): the ribbon greyed out but for Help, and no page.
-            chrome::title_bar(self, ui);
-            ribbon::show(self, ui);
-            chrome::status_bar(self, ui);
-            egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.canvas)).show(ui, |_| {});
+            {
+                // No document open (#1129): the ribbon greyed out but for Help, and no page.
+                chrome::title_bar(self, ui);
+                ribbon::show(self, ui);
+                chrome::status_bar(self, ui);
+                egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.canvas)).show(ui, |_| {});
+            }
         } else {
             chrome::title_bar(self, ui);
             if !self.session.view.focus_mode {
@@ -2023,7 +2043,7 @@ impl WordApp {
         content_controls::popup(self, &ctx);
         dialogs::show(self, &ctx);
         #[cfg(not(target_arch = "wasm32"))]
-        file_browser::show(self, &ctx);
+        file_browser::show(self, ui, &ctx);
         colors::show(self, &ctx);
         zotero::show_alert(self, &ctx);
         read_aloud::show(self, &ctx);

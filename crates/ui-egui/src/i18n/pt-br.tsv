@@ -122,6 +122,8 @@
 	No words yet. Add to Dictionary on a misspelled word puts it here.	Ainda não há palavras. Adicionar ao dicionário em uma palavra com erro a coloca aqui.
 	Mirror indents	Recuos espelhados
 	Nothing	Nada
+	Nothing to redo	Nada para refazer
+	Nothing to undo	Nada para desfazer
 	Number alignment:	Alinhamento do número:
 	Number format	Formato do número
 	Number style for this level:	Estilo de número deste nível:
@@ -461,6 +463,7 @@
 	Horizontal Line	Linha horizontal
 	Hyphenation	Hifenização
 	Icons	Ícones
+	Pages & tables	Páginas e tabelas
 	Ignore All	Ignorar tudo
 	Illustrations	Ilustrações
 	Immersive	Imersivo
@@ -1646,6 +1649,7 @@
 	Display text	Texto exibido
 	Value	Valor
 	Today	Hoje
+	Yesterday	Ontem
 	Put the caret in a content control first.	Coloque primeiro o cursor em um controle de conteúdo.
 	Right-to-Left Table	Tabela da direita para a esquerda
 	Right-to-Left Section	Seção da direita para a esquerda

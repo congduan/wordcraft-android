@@ -326,6 +326,7 @@
 	Hyperlink	Link
 	Hyphenation	Elválasztás
 	Icons	Ikonok
+	Pages & tables	Oldalak és táblázatok
 	Ignore All	Összes kihagyása
 	Illustrations	Illusztrációk
 	Immersive	Elmélyült
@@ -1575,6 +1576,8 @@
 	Link level to style:	A szinthez tartozó stílus:
 	List Definition	Listadefiníció
 	Nothing	Semmi
+	Nothing to redo	Nincs mit megismételni
+	Nothing to undo	Nincs mit visszavonni
 	Number alignment:	Számigazítás:
 	Number format	Számformátum
 	Number style for this level:	A szint számstílusa:
@@ -2107,6 +2110,7 @@
 	Display text	Megjelenített szöveg
 	Value	Érték
 	Today	Ma
+	Yesterday	Tegnap
 	Put the caret in a content control first.	Előbb vidd a kurzort egy tartalomvezérlőbe.
 	This page	Ez az oldal
 	Type:	Típus:

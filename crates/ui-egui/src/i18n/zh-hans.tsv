@@ -137,6 +137,8 @@
 	No templates match your search.	没有与搜索匹配的模板。
 	No words yet. Add to Dictionary on a misspelled word puts it here.	还没有单词。对拼写错误的单词选择“添加到词典”会将其放在这里。
 	Nothing	无
+	Nothing to redo	没有可恢复的内容
+	Nothing to undo	没有可撤消的内容
 	Number alignment:	编号对齐方式：
 	Number format	编号格式
 	Number style for this level:	此级别的编号样式：
@@ -472,6 +474,7 @@
 	Horizontal Line	横线
 	Hyphenation	断字
 	Icons	图标
+	Pages & tables	页面和表格
 	Ignore All	全部忽略
 	Illustrations	插图
 	Immersive	沉浸式
@@ -1646,6 +1649,7 @@
 	Display text	显示文本
 	Value	值
 	Today	今天
+	Yesterday	昨天
 	Put the caret in a content control first.	请先将光标放在内容控件中。
 	Right-to-Left Table	从右向左表格
 	Right-to-Left Section	从右向左节

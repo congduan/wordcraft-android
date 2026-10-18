@@ -8,6 +8,14 @@ description = "WordCraft egui front end (Word-style ribbon UI); swappable: nothi
 [lints]
 workspace = true
 
+[features]
+# Compiles the Android mobile shell (`mobile.rs`, the Android branches of the file browser and
+# dialog placement) on the desktop, so the headless kittest regression tests under `mobile::` can
+# drive it (`cargo test -p wordcraft-ui-egui --features mobile mobile::`). Never part of a default
+# or release build: without it the desktop draws exactly as before. Do not run the whole suite with
+# it on — with the feature the mobile chrome replaces the desktop ribbon in every test.
+mobile = []
+
 [dependencies]
 craft-ui = { git = "https://github.com/storytold/craft-libs", rev = "d27646a5f7c8b4fc85d9dd3213b8c88b58e0088d" }
 wordcraft-geom = { workspace = true }

@@ -12,13 +12,19 @@ use std::path::{Path, PathBuf};
 use egui::{Align2, Rect, Sense, Ui, pos2, vec2};
 
 use crate::file_dialogs::{AfterPick, FileDialogRequest, open_filters};
-use crate::theme::{APP_COLOR, Tokens, regular};
+#[cfg(any(target_os = "android", feature = "mobile"))]
+use crate::mobile::{NAV_INSET, STATUS_INSET};
+#[cfg(not(any(target_os = "android", feature = "mobile")))]
+use crate::theme::{APP_COLOR, regular};
+use crate::theme::Tokens;
 use crate::{WordApp, icons};
 
 /// At most this many entries are listed; a bigger folder shows the first ones and says so.
 const MAX_LISTED: usize = 5000;
 /// At most this many folder entries are read, so a huge folder can't stall the window.
 const MAX_SCANNED: usize = 100_000;
+/// The desktop window's row height; the Android page's rows are `TOUCH_ROW` tall instead.
+#[cfg(not(any(target_os = "android", feature = "mobile")))]
 const ROW: f32 = 24.0;
 
 /// The browser while it is open, and the folder it showed last (where it opens next time).
@@ -240,6 +246,8 @@ impl FileBrowser {
         self.note = Note::None;
     }
 
+    // The desktop window's title; the Android page titles itself with the folder's name instead.
+    #[cfg(not(any(target_os = "android", feature = "mobile")))]
     fn title(&self) -> &'static str {
         match self.req {
             FileDialogRequest::Open { .. } => "Open",
@@ -298,22 +306,33 @@ impl WordApp {
     }
 }
 
-/// Draw the browser, if it is open.
-pub(crate) fn show(app: &mut WordApp, ctx: &egui::Context) {
+/// Draw the browser, if it is open. `ui` is the frame's root, for the Android page layout; the
+/// desktop window is placed on `ctx` as before.
+#[cfg_attr(
+    not(any(target_os = "android", feature = "mobile")),
+    allow(unused_variables) // `ui` is the Android page's canvas; the desktop window draws on `ctx`
+)]
+pub(crate) fn show(app: &mut WordApp, ui: &mut Ui, ctx: &egui::Context) {
     let Some(mut b) = app.file_browser.open.take() else { return };
     let t = Tokens::get(ctx);
     let mut open = true;
+    #[cfg(any(target_os = "android", feature = "mobile"))]
+    let mut done: Option<Option<PathBuf>> = show_mobile(ui, &mut b, &mut open, &t);
+    #[cfg(not(any(target_os = "android", feature = "mobile")))]
     let mut done: Option<Option<PathBuf>> = None;
-    egui::Window::new(tl!(b.title()))
-        .id(egui::Id::new("builtin_file_browser"))
-        .collapsible(false)
-        .resizable(false)
-        .anchor(Align2::CENTER_CENTER, vec2(0.0, -20.0))
-        .open(&mut open)
-        .show(ctx, |ui| {
-            ui.set_width(620.0);
-            done = body(ui, &mut b, &t);
-        });
+    #[cfg(not(any(target_os = "android", feature = "mobile")))]
+    {
+        egui::Window::new(tl!(b.title()))
+            .id(egui::Id::new("builtin_file_browser"))
+            .collapsible(false)
+            .resizable(false)
+            .anchor(Align2::CENTER_CENTER, vec2(0.0, -20.0))
+            .open(&mut open)
+            .show(ctx, |ui| {
+                ui.set_width(620.0);
+                done = body(ui, &mut b, &t);
+            });
+    }
     if !open {
         done = Some(None);
     }
@@ -323,7 +342,204 @@ pub(crate) fn show(app: &mut WordApp, ctx: &egui::Context) {
     }
 }
 
-/// The browser's contents; `Some` once it closes (`Some(None)`: cancelled).
+/// Android shows the browser as a full screen page, the way a phone asks for a file: a top app
+/// bar (back, which cancels, the title, and the Up and Home folder moves), the folder listing
+/// filling the screen, and the file name with Open and Cancel at the bottom. The desktop's
+/// 620dp centred window has no place on a phone.
+///
+/// The page is drawn as foreground areas rather than panels: the frame's panels are already spent
+/// by whatever is behind it (the home screen or the editor), so panels here would stack below the
+/// screen instead of covering it. As a foreground page it covers them, the way the desktop window
+/// floats over the backstage. The opaque backdrop swallows taps that miss the page's controls, so
+/// nothing behind is reached while the browser is up.
+///
+/// This is presentation only: the `FileBrowser` state — the listing, selection, `accept`, the
+/// notes — is the very same as the desktop window's, and every move goes through its methods.
+/// Returns `Some` with the picked path once Open confirms a selection; cancelling goes through
+/// `open` like on the desktop.
+#[cfg(any(target_os = "android", feature = "mobile"))]
+fn show_mobile(ui: &mut Ui, b: &mut FileBrowser, open: &mut bool, t: &Tokens) -> Option<Option<PathBuf>> {
+    use crate::mobile::{BAR_H, EDGE, ICON_BTN, LIST_ROW, TOUCH, icon_button, selection, sheet_button};
+
+    const NAME_ROW: f32 = 44.0;
+    const NOTE_ROW: f32 = 40.0; // two wrapped lines: notes are one line, paths can make two
+
+    let screen = ui.ctx().content_rect();
+    let note = note_of(b, t);
+    // The title is where you are, not what you are doing (`b.title()` repeats the buttons below
+    // it): the folder's own name, or the root's slash when there is none.
+    let title = b.dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "/".to_owned());
+    let mut pick = false;
+    let ctx = ui.ctx().clone();
+    // The backdrop is its own area (a full size allocation would push the page's layout below the
+    // screen): it paints the page over whatever is behind it and swallows the taps that miss the
+    // page's controls, so the home screen or editor underneath is never reached.
+    egui::Area::new(egui::Id::new("builtin_file_browser_backdrop")).order(egui::Order::Foreground).fixed_pos(screen.min).show(&ctx, |ui| {
+        let (backdrop, _modal) = ui.allocate_exact_size(screen.size(), Sense::click());
+        ui.painter().rect_filled(backdrop, 0.0, t.canvas);
+    });
+    egui::Area::new(egui::Id::new("builtin_file_browser_page")).order(egui::Order::Foreground).fixed_pos(screen.min).show(&ctx, |ui| {
+        // Exactly the screen, not a shrink wrap of the contents: the name field's INFINITY width
+        // and the truncated title would otherwise chase their own tail, the area growing a little
+        // every frame until nothing lines up with the screen edge.
+        ui.set_min_size(screen.size());
+        ui.set_max_size(screen.size());
+        // Top app bar: back (which cancels), title, Up and Home folder — the shell's bar height
+        // and its frameless 48dp icon buttons, so both bars read as one system.
+        let bar = Rect::from_min_max(screen.min, pos2(screen.max.x, screen.min.y + STATUS_INSET + BAR_H));
+        ui.painter().rect_filled(bar, 0.0, t.ribbon);
+        ui.painter().line_segment(
+            [pos2(bar.min.x, bar.max.y - 0.5), pos2(bar.max.x, bar.max.y - 0.5)],
+            egui::Stroke::new(1.0, t.border),
+        );
+        ui.add_space(STATUS_INSET);
+        // Left to right, with an EDGE margin on both sides: back at the thumb's left (it
+        // cancels), the title beside it, and the folder moves at the right. A right-to-left row
+        // here would hang the last control off the screen's left edge and drag every row below
+        // it with it.
+        ui.horizontal(|ui| {
+            ui.set_height(BAR_H);
+            ui.add_space(EDGE);
+            if icon_button(ui, "arrowLeft", tl!("Cancel"), true, t) {
+                *open = false;
+            }
+            // What is left after the two buttons still to come, their spacings and the trailing
+            // EDGE margin — subtracting the back button again (it is already placed) hung ~64dp of
+            // dead air off the bar's right edge.
+            let spacing = ui.spacing().item_spacing.x;
+            let title_width = (ui.available_width() - 2.0 * ICON_BTN - 3.0 * spacing - EDGE).max(TOUCH);
+            ui.add_sized(
+                vec2(title_width, BAR_H),
+                egui::Label::new(egui::RichText::new(&title).font(crate::theme::semibold(16.0)).color(t.text)).truncate(),
+            );
+            if icon_button(ui, "chevronUp", tl!("Up one level"), b.dir.parent().is_some(), t) {
+                b.up();
+            }
+            if icon_button(ui, "homeFolder", tl!("Home folder"), true, t)
+                && let Some(h) = home()
+            {
+                b.navigate(h);
+            }
+            ui.add_space(EDGE);
+        });
+        ui.add_space(8.0);
+        // The listing: everything between the app bar and the name field. Full bleed with hairline
+        // separators — the old stroked, rounded container around a 48dp list fought the page.
+        let reserved = 8.0 + NAME_ROW + 12.0 + TOUCH + 8.0 + NAV_INSET + if note.is_some() { NOTE_ROW } else { 0.0 };
+        let list_height = (ui.available_height() - reserved).max(120.0);
+        let entries: Vec<Entry> = b.listing.as_ref().map(|l| l.entries.clone()).unwrap_or_default();
+        egui::ScrollArea::vertical()
+            .auto_shrink([false, false])
+            .min_scrolled_height(list_height)
+            .max_height(list_height)
+            .show_rows(ui, LIST_ROW, entries.len(), |ui, range| {
+                for e in entries.get(range).unwrap_or(&[]) {
+                    let (r, resp) = ui.allocate_exact_size(vec2(ui.available_width(), LIST_ROW), Sense::click());
+                    if b.selected.as_ref() == Some(&e.path) {
+                        ui.painter().rect_filled(r, 0.0, selection(t));
+                    } else if resp.hovered() {
+                        ui.painter().rect_filled(r, 0.0, t.hover);
+                    }
+                    // Line-art icons in `text`, like the home screen's rows — the yellow filled
+                    // folder was a colour the rest of the page never uses.
+                    let icon = Rect::from_center_size(pos2(r.min.x + EDGE + 12.0, r.center().y), vec2(20.0, 20.0));
+                    icons::paint(ui.painter(), icon, if e.dir { "folderOutline" } else { "file" }, t.text, t.text);
+                    ui.painter()
+                        .with_clip_rect(r)
+                        .text(pos2(r.min.x + EDGE + 32.0, r.center().y), Align2::LEFT_CENTER, &e.name, crate::theme::regular(15.0), t.text);
+                    icons::paint(
+                        ui.painter(),
+                        Rect::from_center_size(pos2(r.max.x - EDGE - 10.0, r.center().y), vec2(14.0, 14.0)),
+                        "chevronRight",
+                        t.text_dim,
+                        t.text_dim,
+                    );
+                    ui.painter().line_segment(
+                        [pos2(r.min.x, r.max.y - 0.5), pos2(r.max.x, r.max.y - 0.5)],
+                        egui::Stroke::new(1.0, t.border),
+                    );
+                    if resp.clicked() {
+                        if e.dir {
+                            b.navigate(e.path.clone());
+                        } else {
+                            b.select(e);
+                        }
+                    }
+                }
+            });
+        if b.unavailable {
+            ui.add_space(8.0);
+            ui.label(
+                egui::RichText::new(tl!(
+                    "The system file dialog isn't available, so WordCraft shows its own. To get the system dialog, install a file chooser portal (such as xdg-desktop-portal-gtk) or zenity."
+                ))
+                .color(t.text_dim),
+            );
+        }
+        if let Some((text, color)) = note {
+            ui.label(egui::RichText::new(text).color(color));
+        }
+        // The 8/12/8 rhythm: name field, buttons, the gesture strip.
+        ui.add_space(8.0);
+        ui.horizontal(|ui| {
+            ui.add_space(EDGE);
+            let label = ui.label(tl!("File name:"));
+            // The field takes the one control radius: egui takes a TextEdit's corner from the
+            // widget visuals, so the row's scope restates them at [`RADIUS`].
+            crate::mobile::field_radius(ui);
+            // An explicit width, not `INFINITY` plus a trailing margin: the infinite field ate the
+            // margin and the overflow widened this page's `Ui`, which the buttons row below then
+            // started from — Open ended flush with the screen edge.
+            let width = (ui.available_width() - EDGE).max(TOUCH);
+            let r = ui.add(egui::TextEdit::singleline(&mut b.name).desired_width(width)).labelled_by(label.id);
+            if b.focus_name {
+                r.request_focus();
+                b.focus_name = false;
+            }
+            if r.changed() {
+                b.selected = None;
+                b.note = Note::None;
+            }
+        });
+        ui.add_space(12.0);
+        let can_open = b.selected.is_some() || !b.name.trim().is_empty();
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            ui.add_space(EDGE);
+            if sheet_button(ui, tl!(b.ok_label()), true, 128.0, can_open, t) {
+                pick = true;
+            }
+            if sheet_button(ui, tl!("Cancel"), false, 96.0, true, t) {
+                *open = false;
+            }
+        });
+        ui.add_space(8.0 + NAV_INSET);
+    });
+    if pick && let Step::Pick(path) = b.accept() {
+        return Some(Some(path));
+    }
+    None
+}
+
+/// The note under the listing, if any — the same messages the desktop window shows.
+#[cfg(any(target_os = "android", feature = "mobile"))]
+fn note_of(b: &FileBrowser, t: &Tokens) -> Option<(String, egui::Color32)> {
+    match (&b.listing, &b.note) {
+        (_, Note::NotFound(name)) => Some((crate::i18n::fmt(tl!("{name} wasn't found."), &[("name", name)]), t.red)),
+        (_, Note::Replace(p)) => {
+            let name = p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+            Some((crate::i18n::fmt(tl!("{name} already exists. Choose Save again to replace it."), &[("name", &name)]), t.red))
+        }
+        (Err(e), _) => Some((crate::i18n::fmt(tl!("This folder can't be read: {error}"), &[("error", e)]), t.red)),
+        (Ok(l), _) if l.truncated => {
+            Some((crate::i18n::fmt(tl!("Showing the first {count} items."), &[("count", &l.entries.len().to_string())]), t.text_dim))
+        }
+        _ => None,
+    }
+}
+
+/// The desktop window's contents; `Some` once it closes (`Some(None)`: cancelled). The Android
+/// page draws its own (`show_mobile`) and would count this dead.
+#[cfg(not(any(target_os = "android", feature = "mobile")))]
 fn body(ui: &mut Ui, b: &mut FileBrowser, t: &Tokens) -> Option<Option<PathBuf>> {
     if b.unavailable {
         ui.label(
@@ -455,7 +671,9 @@ fn body(ui: &mut Ui, b: &mut FileBrowser, t: &Tokens) -> Option<Option<PathBuf>>
     None
 }
 
-/// A small button with a drawn icon and a tooltip; true when clicked.
+/// A small button with a drawn icon and a tooltip; true when clicked. The desktop window's row
+/// control; the Android page has the 48dp `bar_button` instead.
+#[cfg(not(any(target_os = "android", feature = "mobile")))]
 fn icon_button(ui: &mut Ui, t: &Tokens, icon: &str, tip: &str, enabled: bool) -> bool {
     let (r, resp) = ui.allocate_exact_size(vec2(28.0, 24.0), if enabled { Sense::click() } else { Sense::hover() });
     if enabled && resp.hovered() {

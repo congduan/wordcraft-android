@@ -108,6 +108,8 @@
 	No document is open. Create a document or open one first.	Es ist kein Dokument geöffnet. Erstellen oder öffnen Sie zuerst ein Dokument.
 	No templates match your search.	Keine Vorlagen entsprechen Ihrer Suche.
 	Nothing	Keine
+	Nothing to redo	Nichts wiederherzustellen
+	Nothing to undo	Nichts rückgängig zu machen
 	Number alignment:	Nummernausrichtung:
 	Number format	Nummernformat
 	Number style for this level:	Nummernstil für diese Ebene:
@@ -403,6 +405,7 @@
 	Horizontal Line	Horizontale Linie
 	Hyphenation	Silbentrennung
 	Icons	Symbole
+	Pages & tables	Seiten & Tabellen
 	Ignore All	Alle ignorieren
 	Illustrations	Illustrationen
 	Immersive	Immersiv
@@ -1631,6 +1634,7 @@
 	Display text	Anzeigetext
 	Value	Wert
 	Today	Heute
+	Yesterday	Gestern
 	Put the caret in a content control first.	Setzen Sie die Einfügemarke zuerst in ein Inhaltssteuerelement.
 	Right-to-Left Table	Tabelle von rechts nach links
 	Right-to-Left Section	Abschnitt von rechts nach links
