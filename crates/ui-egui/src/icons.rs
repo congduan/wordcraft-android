@@ -656,6 +656,12 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.fcircle(10.0, 10.0, 3.5, a);
         }
         "equation" => pen.text(10.0, 10.0, 17.0, "π", a, false),
+        // Insert Equation: the π object with a plus beside it (same accent-plus language as `fromText`).
+        "equationAdd" => {
+            pen.text(8.0, 10.0, 15.0, "π", a, false);
+            pen.line_c(&[(16.5, 12.5), (16.5, 18.5)], a);
+            pen.line_c(&[(13.5, 15.5), (19.5, 15.5)], a);
+        }
         "symbol" => pen.text(10.0, 10.0, 17.0, "Ω", c, false),
         // Draw
         "pen" => {
@@ -1244,6 +1250,11 @@ pub fn paint(p: &Painter, r: Rect, name: &str, c: Color32, accent: Color32) {
             pen.lines(9.0, 17.0, &[14.0, 17.0]);
         }
         "formula" => pen.text(10.0, 10.0, 12.0, "fx", a, false),
+        // Toggle field codes: the braces the field shows, with the code they hide as a dot.
+        "fieldCodes" => {
+            pen.text(10.0, 10.0, 13.0, "{ }", c, false);
+            pen.fcircle(10.0, 10.0, 1.2, a);
+        }
         "selectTable" => {
             pen.rect(3.0, 3.0, 17.0, 17.0, c);
             pen.fill(&[(8.0, 7.0), (8.0, 15.0), (10.0, 13.0), (11.5, 16.0), (12.5, 15.5), (11.0, 12.5), (13.5, 12.5)], a);

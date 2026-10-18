@@ -144,10 +144,17 @@ impl AndroidShell {
     fn lift_above_soft_input(&self, raw: &mut egui::RawInput) {
         let Some(mut rect) = raw.screen_rect else { return };
         let content = self.activity_app.content_rect();
-        let ppp = raw.pixels_per_point.unwrap_or(1.0).max(f32::EPSILON);
+        // `RawInput` carries no scale of its own; winit reports the device's under
+        // `ViewportInfo::native_pixels_per_point` (1.0 until the first scale event).
+        let ppp = raw
+            .viewports
+            .get(&egui::ViewportId::ROOT)
+            .and_then(|viewport| viewport.native_pixels_per_point)
+            .unwrap_or(1.0)
+            .max(f32::EPSILON);
         let visible = egui::Rect::from_min_size(
             egui::pos2(content.left as f32 / ppp, content.top as f32 / ppp),
-            egui::vec2(content.width() as f32 / ppp, content.height() as f32 / ppp),
+            egui::vec2((content.right - content.left) as f32 / ppp, (content.bottom - content.top) as f32 / ppp),
         );
         // Only shrink (never grow): the fallback inset values already reserve space
         // for the system bars, and an equal rect means the keyboard is hidden.

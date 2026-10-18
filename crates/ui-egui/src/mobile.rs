@@ -349,7 +349,7 @@ fn elided(ui: &Ui, text: &str, font: egui::FontId, max: f32) -> String {
     let mut lo = 0usize;
     let mut hi = chars.len();
     while lo < hi {
-        let mid = lo + (hi - lo + 1) / 2;
+        let mid = lo + (hi - lo).div_ceil(2);
         let candidate: String = chars[..mid].iter().chain(std::iter::once(&'…')).collect();
         if width(&candidate) <= max {
             lo = mid;
@@ -760,38 +760,167 @@ mod tests {
     use egui::{Rect, epaint, pos2};
     use serde_json::json;
 
-    use super::{CORE_TABS, NAV_INSET};
+    use super::{CORE_TABS, NAV_INSET, COMMANDS, command_glyph};
     use crate::{Services, WordApp};
     use wordcraft_engine::Session;
 
     /// Phone portrait, like the devices this port targets.
     const PHONE: egui::Vec2 = egui::Vec2::new(412.0, 892.0);
 
-    /// TEMP(P9 diagnostic): dump painted texts and fills for the Home sheet.
-    #[test]
-    fn diag_sheet_layout_dump() {
-        let mut app = phone_app();
-        app.session.view.ruler = false;
-        let mut h = egui_kittest::Harness::builder().with_size(PHONE).build_ui_state(
-            |ui, app: &mut WordApp| {
-                ui.ctx().data_mut(|d| d.insert_temp(egui::Id::new("wordcraft.mobile.sheet"), "Home".to_owned()));
-                let ctx = ui.ctx().clone();
-                app.logic(&ctx);
-                app.ui(ui);
-            },
-            app,
-        );
+    /// Opens a command sheet by tapping its tab (the tab label is the first painted "name" on
+    /// screen; the sheet title with the same word comes later in paint order).
+    fn open_sheet(h: &mut egui_kittest::Harness<'_, WordApp>, tab: &str) {
         h.run_steps(2);
         h.state_mut().run("file.new", json!({})).expect("file.new runs");
-        h.run_steps(6);
-        for s in h.output().shapes.iter() {
-            let r = s.shape.visual_bounding_rect();
-            match &s.shape {
-                epaint::Shape::Text(t) => println!("TEXT {:?} at {:?}", t.galley.text(), r),
-                epaint::Shape::Rect(_) => println!("RECT {:?}", r),
-                _ => {}
+        h.run_steps(2);
+        let at = text_rect(h, tab).unwrap_or_else(|| panic!("the {tab} tab is painted"));
+        tap(h, at.center());
+        h.run_steps(4);
+    }
+
+    /// The command grid fills the sheet width in three columns (the two-column grid left the
+    /// right half of the sheet blank), long names elide to an ellipsis instead of being cut
+    /// mid-word, and no tile falls back to the lettered placeholder.
+    #[test]
+    fn the_command_grid_fills_the_width_in_three_columns() {
+        for width in [412.0, 360.0] {
+            let size = egui::Vec2::new(width, PHONE.y);
+            let mut h = egui_kittest::Harness::builder().with_size(size).build_ui_state(
+                |ui, app: &mut WordApp| {
+                    let ctx = ui.ctx().clone();
+                    app.logic(&ctx);
+                    app.ui(ui);
+                },
+                phone_app(),
+            );
+            open_sheet(&mut h, "Insert");
+            // Three tiles of the Illustrations group on one line, the row reaching across the
+            // sheet: the last label sits in the sheet's right third.
+            let mut row: Vec<(String, Rect)> = Vec::new();
+            for name in ["Pictures", "Shapes", "Icons"] {
+                let r = text_rect(&h, name).unwrap_or_else(|| panic!("the {name} tile is painted at {width}dp"));
+                row.push((name.to_owned(), r));
             }
+            let ys = row.iter().map(|(_, r)| r.center().y).collect::<Vec<_>>();
+            assert!(
+                ys.windows(2).all(|w| (w[0] - w[1]).abs() < 4.0),
+                "at {width}dp the three Illustrations tiles are not on one row: {ys:?}"
+            );
+            let last = row.last().expect("the row has tiles").1;
+            assert!(
+                last.center().x > width * 0.7,
+                "at {width}dp the third column sits at x={} — the grid is not three columns wide",
+                last.center().x
+            );
+            // "Convert Text to Table" is the longest name in the sheets: whole when it fits, an
+            // ellipsis when it does not — never a mid-word cut like the old clipped paint.
+            let convert = h.output().shapes.iter().find_map(|s| match &s.shape {
+                epaint::Shape::Text(t) if t.galley.text().contains("Convert Text to") => Some(t.galley.text().to_owned()),
+                _ => None,
+            });
+            let convert = convert.expect("the Convert Text to Table tile is painted");
+            assert!(
+                convert == "Convert Text to Table" || convert.ends_with('…'),
+                "the long label was cut, not elided: {convert:?}"
+            );
         }
+    }
+
+    /// Every command on every sheet resolves to a drawn glyph. The icon library's fallback for
+    /// an unknown name is a rounded tile with the id's first letter — the F/S/I/A placeholders
+    /// the brief screenshotted — so each sheet id is painted alone into its own probe rect and
+    /// any letter it draws is either one a designed glyph writes on purpose or a fallback.
+    #[test]
+    fn every_sheet_command_draws_a_glyph_not_a_letter_tile() {
+        // Letters a designed glyph writes on purpose (a text box holds an "A", the styles glyph
+        // is the classic brushed "A", the equation glyphs are π) — anything else is a fallback.
+        const DESIGNED: &[(&str, char)] = &[
+            ("insert.textBox", 'A'),
+            ("insert.equation", 'π'),
+            ("equation.insert", 'π'),
+            ("equation.professional", 'π'),
+            ("table.style", 'A'),
+        ];
+        // The same walk the callback below makes: probe slot n paints in a 24dp cell on a 30dp
+        // grid, 19 cells per row, and each cell is that probe's clip rect.
+        let at = |slot: usize| Rect::from_min_size(pos2((slot % 19) as f32 * 30.0, (slot / 19) as f32 * 30.0), egui::vec2(24.0, 24.0));
+        let probes: Vec<(Rect, &str)> = COMMANDS
+            .iter()
+            .flat_map(|(_, groups)| groups.iter())
+            .flat_map(|(_, ids)| ids.iter())
+            .enumerate()
+            .map(|(slot, id)| (at(slot), *id))
+            .collect();
+        let mut h = egui_kittest::Harness::builder().with_size(egui::Vec2::new(600.0, 200.0)).build_ui_state(
+            |ui, framed: &mut bool| {
+                // The probe paints glyphs whose bold variants use the interface family, which only
+                // the app's font setup registers; a mid-frame `set_fonts` lands next frame, so the
+                // probes go up on the second pass.
+                ui.ctx().set_fonts(crate::theme::font_definitions(false, false));
+                if !*framed {
+                    *framed = true;
+                    return;
+                }
+                let ctx = ui.ctx().clone();
+                let mut slot = 0usize;
+                for groups in COMMANDS.iter().map(|(_, groups)| groups) {
+                    for ids in groups.iter().map(|(_, ids)| ids) {
+                        for id in ids.iter() {
+                            let probe = at(slot);
+                            let painter = egui::Painter::new(ctx.clone(), egui::LayerId::new(egui::Order::Tooltip, egui::Id::new(*id)), probe);
+                            crate::icons::paint(&painter, probe, command_glyph(id), egui::Color32::WHITE, egui::Color32::BLUE);
+                            slot += 1;
+                        }
+                    }
+                }
+            },
+            false,
+        );
+        h.run_steps(2);
+        let lettered: Vec<String> = h
+            .output()
+            .shapes
+            .iter()
+            .filter_map(|s| match &s.shape {
+                epaint::Shape::Text(t) => Some((s.clip_rect, t.galley.text().to_owned())),
+                _ => None,
+            })
+            .filter_map(|(clip, text)| {
+                // Only a lone letter is suspect: designed glyphs also write "fx", "123" or "abc".
+                if text.chars().count() != 1 || !text.chars().next().is_some_and(|c| c.is_alphabetic()) {
+                    return None;
+                }
+                let (_, id) = probes.iter().find(|(probe, _)| *probe == clip)?;
+                let ch = text.chars().next()?;
+                (!DESIGNED.iter().any(|(d, c)| d == id && *c == ch)).then(|| format!("{id} drew {text:?}"))
+            })
+            .collect();
+        assert!(lettered.is_empty(), "lettered placeholder tiles for sheet commands: {lettered:?}");
+    }
+
+    /// A toggle command's tile shows the shared selection treatment while the format is on at the
+    /// selection, through the same reads the desktop ribbon makes — and clears when it turns off.
+    #[test]
+    fn toggle_tiles_show_the_selection_treatment() {
+        let mut h = harness(phone_app());
+        open_sheet(&mut h, "Home");
+        let fill_at = |h: &egui_kittest::Harness<'_, WordApp>, label: &str| {
+            let at = text_rect(h, label).unwrap_or_else(|| panic!("the {label} tile is painted")).center();
+            h.output().shapes.iter().any(|s| match &s.shape {
+                epaint::Shape::Rect(rect) => {
+                    let r = rect.rect;
+                    r.contains(at) && r.height() > 55.0 && r.height() < 70.0 && r.width() > 90.0 && r.width() < 140.0
+                }
+                _ => false,
+            })
+        };
+        // A fresh paragraph starts left-aligned and unbolded.
+        assert!(fill_at(&h, "Align Left"), "Align Left is the paragraph's alignment but its tile shows no active fill");
+        assert!(!fill_at(&h, "Bold"), "Bold is off but its tile shows the active fill");
+        h.state_mut().run("para.alignCenter", json!({})).expect("para.alignCenter runs");
+        h.run_steps(4);
+        assert!(fill_at(&h, "Center"), "alignCenter did not light the Center tile");
+        assert!(!fill_at(&h, "Align Left"), "Align Left stayed lit after alignCenter");
     }
 
     fn harness(app: WordApp) -> egui_kittest::Harness<'static, WordApp> {
